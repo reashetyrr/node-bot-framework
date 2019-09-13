@@ -8,9 +8,10 @@
   },
   "dependencies": {
     "discord.js": "*",
-    "node-opus": "*",
+    "dotenv": "^8.1.0",
     "express": "*",
     "fs": "*",
+    "node-opus": "*",
     "shlex": "*"
   },
   "engines": {
