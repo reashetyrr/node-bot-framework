@@ -21,15 +21,16 @@ class DiscordBot {
         this.#voice = startup_settings.voice;
         this.#debug = process.env.DEBUG;
         this.#webserver = process.env.WEBSERVER;
-        this.#generate_commands();
-        this.#generate_listeners();
+        this._generate_commands();
+        this._generate_listeners();
         this.#client = discord.client(this.#token)
         if (this.#debug) {
-            this.#on_connected();
+            this._on_connected();
         }
+        this._on_message();
     }
 
-    #generate_commands() {
+    _generate_commands() {
         const commands = glob.sync('../commands/*.js').map(file => require( path.resolve( file ) ));
         let all_commands = {all: commands.map(c => {
             try {
@@ -49,17 +50,17 @@ class DiscordBot {
         this.#commands = all_commands;
     }
 
-    #generate_listeners() {
+    _generate_listeners() {
 
     }
 
-    #on_connected() {
+    _on_connected() {
         this.#client.on('connected', () => {
             console.log(`Succesfully logged in as ${this.#client.user.tag}`)
         });
     }
 
-    #on_message() {
+    _on_message() {
         this.#client.on('message', async message => {
             if (message.author.bot || !message.content.startsWith('~')) return;
             const args = shlex.split(message.content.slice(1).trim());
