@@ -1,4 +1,4 @@
-import Command from "../framework/core/Command";
+const Command = require("../framework/core/Command.js");
 
 class Ping extends Command {
     constructor() {
