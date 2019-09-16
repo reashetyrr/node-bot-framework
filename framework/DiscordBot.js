@@ -1,30 +1,79 @@
-const discord = require('discord.js');
+import discord from "discord.js";
+import glob from "glob";
+import path from "path";
+import shlex from 'shlex';
+import Command from './core/Command';
 
 class DiscordBot {
+    #client;
     #debug;
-    #commands = [];
-    #listeners = [];
+    #commands = {};
+    #listeners = {};
     #voice;
     #webserver;
+    #cache = {};
+    #token;
     constructor(token) {
-        this.token = token;
+        this.#token = token;
     }
 
     run(startup_settings = {commands: true, listeners: true, voice: true}) {
         this.#voice = startup_settings.voice;
-        this.#debug = startup_settings.debug;
-        this.#webserver = startup_settings.webserver;
+        this.#debug = process.env.DEBUG;
+        this.#webserver = process.env.WEBSERVER;
+        this.#generate_commands();
+        this.#generate_listeners();
+        this.#client = discord.client(this.#token)
+        if (this.#debug) {
+            this.#on_connected();
+        }
+    }
 
+    #generate_commands() {
+        const commands = glob.sync('../commands/*.js').map(file => require( path.resolve( file ) ));
+        let all_commands = {all: commands.map(c => {
+            try {
+                const t =  new c();
+                if (!(t instanceof Command)) {
+                    return false;
+                }
+                return t;
+            } catch (e) {
+                return false;
+            }
+        })};
+
+        for (let command of commands){
+            all_commands[command.name] = {execute: command.execute, allowed_channels: command.allowed_channels};
+        }
+        this.#commands = all_commands;
+    }
+
+    #generate_listeners() {
 
     }
 
-    #generate_commands(fs, glob) {
-
+    #on_connected() {
+        this.#client.on('connected', () => {
+            console.log(`Succesfully logged in as ${this.#client.user.tag}`)
+        });
     }
 
-    #generate_listeners(fs, glob) {
-
+    #on_message() {
+        this.#client.on('message', async message => {
+            if (message.author.bot || !message.content.startsWith('~')) return;
+            const args = shlex.split(message.content.slice(1).trim());
+            const command = args.shift().toLowerCase();
+            if (this.#commands.all.includes(command)) {
+                console.log(`Received command ${command} with params: ${JSON.stringify(args)}`);
+                if (this.#commands.allowed_channels.length !== 0 && !this.#commands[command].allowed_channels.includes(message.channel.id)) {
+                    console.log(`Command ${command} not allowed in channel ${message.channel.name}`);
+                    return;
+                }
+                await this.#commands[command].execute(message, message.author, ...args);
+            }
+        });
     }
 }
 
-module.exports = DiscordBot;
+export default DiscordBot;

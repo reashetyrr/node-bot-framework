@@ -11,6 +11,7 @@
     "dotenv": "^8.1.0",
     "express": "*",
     "fs": "*",
+    "glob": "^7.1.4",
     "node-opus": "*",
     "shlex": "*"
   },
