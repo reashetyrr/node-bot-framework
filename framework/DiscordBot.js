@@ -64,14 +64,20 @@ class DiscordBot {
             if (message.author.bot || !message.content.startsWith('~')) return;
             const args = shlex.split(message.content.slice(1).trim());
             const command = args.shift().toLowerCase();
-            if (this.#commands.all.includes(command)) {
-                console.log(`Received command ${command} with params: ${JSON.stringify(args)}`);
-                if (this.#commands.allowed_channels.length !== 0 && !this.#commands[command].allowed_channels.includes(message.channel.id)) {
-                    console.log(`Command ${command} not allowed in channel ${message.channel.name}`);
+            let found_command = null;
+            for (let c of this.#commands) {
+                if (c.name === command || c.aliases.includes(command)) {
+                    found_command = c;
                     return;
                 }
-                await this.#commands[command].execute(message, message.author, ...args);
             }
+            if (found_command === null) return false;
+            console.log(`Received command ${command} with params: ${JSON.stringify(args)}`);
+            if (this.#commands.allowed_channels.length !== 0 && !this.#commands[command].allowed_channels.includes(message.channel.id)) {
+                console.log(`Command ${command} not allowed in channel ${message.channel.name}`);
+                return;
+            }
+            await found_command.execute(message, message.author, ...args);
         });
     }
 }
