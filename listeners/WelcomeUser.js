@@ -14,3 +14,5 @@ class WelcomeUser extends Listener {
         });
     }
 }
+
+module.exports = WelcomeUser
