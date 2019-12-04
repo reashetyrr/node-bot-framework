@@ -83,8 +83,9 @@ class DiscordBot {
         let listening_events = '';
         for (let [event_name, event_actions] of Object.entries(all_listeners)) {
             listening_events += `${event_name},`;
-            for (let event_action of event_actions)
-                this.#client.on(event_name, event_action)
+            if (event_name === 'all') continue;
+            listening_events += `${event_name},`;
+            event_actions.forEach(event_action => this.#client.on(event_name, event_action));
         }
 
 
