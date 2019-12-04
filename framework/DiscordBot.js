@@ -25,8 +25,7 @@ class DiscordBot {
         this.#debug = process.env.DEBUG;
         this.#webserver = process.env.WEBSERVER;
         this.#client = new discord.Client();
-        this._generate_commands();
-        this._generate_listeners();
+
         if (this.#debug) {
             this._on_connected();
         }
@@ -36,7 +35,8 @@ class DiscordBot {
         } catch (e) {
             console.error(e.message);
         }
-
+        this._generate_commands();
+        this._generate_listeners();
     }
 
     _generate_commands() {
@@ -60,7 +60,7 @@ class DiscordBot {
     }
 
     _generate_listeners() {
-        const listeners = glob.sync('./listeners/*.js').map(file => require( path.resolve( file )));
+        const listeners = glob.sync('./listeners/*.js').map(listener => require( path.resolve( listener )));
         let all_listeners = {all: listeners.map(c => {
                 try {
                     const t =  new c();
@@ -77,20 +77,21 @@ class DiscordBot {
         for (let listener of all_listeners.all){
             if (!all_listeners[listener.event_name])
                 all_listeners[listener.event_name] = [];
-            all_listeners[listener.event_name].push(listener.execute)
+            all_listeners[listener.event_name].push(listener)
         }
 
         let listening_events = '';
-        for (let [event_name, event_actions] of Object.entries(all_listeners)) {
-            listening_events += `${event_name},`;
+        for (let [event_name, listeners] of Object.entries(all_listeners)) {
             if (event_name === 'all') continue;
-            listening_events += `${event_name},`;
-            event_actions.forEach(event_action => this.#client.on(event_name, event_action));
+            listening_events += `${event_name}(${listeners.length} registered actions),`;
+            listeners.forEach(listener => {
+                this.#client.on(event_name, (...params) => {
+                    listener.execute(...params);
+                });
+            });
         }
 
-
-
-        console.log(`Listening to  ${Object.keys(all_listeners).length - 1} events: `)
+        console.log(`Listening to  ${Object.keys(all_listeners).length - 1} events: ${listening_events.slice(0, -1)}`)
 
         this.#listeners = all_listeners;
     }

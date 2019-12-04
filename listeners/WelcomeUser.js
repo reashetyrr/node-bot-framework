@@ -8,11 +8,11 @@ class WelcomeUser extends Listener {
     }
     execute(member) {
         this.send_to_channels.forEach(async channel_id => {
-            const channel = this.get_channel_from_id(channel_id);
+            const channel = await this.get_channel_from_id(channel_id);
 
-            await channel.send(`User ${member.tag} has joined the guild!`);
+            await channel.send(`User ${member.user.tag} has joined the guild!`);
         });
     }
 }
 
-module.exports = WelcomeUser
+module.exports = WelcomeUser;

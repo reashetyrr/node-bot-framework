@@ -8,8 +8,12 @@ class Listener {
         return process.env.DEBUG;
     }
 
+    set client(client) {
+        this._client = client;
+    }
+
     get_channel_from_id(channel_id) {
-        this._client.channels.get(channel_id);
+        return this._client.channels.get(channel_id);
     }
 
     execute(...params) {
