@@ -3,6 +3,7 @@ const glob = require("glob");
 const path = require("path");
 const shlex = require('shlex');
 const Command = require('./core/Command');
+const Listener = require('./core/Listener');
 
 class DiscordBot {
     #client=null;
@@ -59,7 +60,38 @@ class DiscordBot {
     }
 
     _generate_listeners() {
+        const listeners = glob.sync('./listeners/*.js').map(file => require( path.resolve( file )));
+        let all_listeners = {all: listeners.map(c => {
+                try {
+                    const t =  new c();
+                    if (!(t instanceof Listener)) {
+                        return false;
+                    }
+                    t.client = this.#client;
+                    return t;
+                } catch (e) {
+                    return false;
+                }
+            })};
 
+        for (let listener of all_listeners.all){
+            if (!all_listeners[listener.event_name])
+                all_listeners[listener.event_name] = [];
+            all_listeners[listener.event_name].push(listener.execute)
+        }
+
+        let listening_events = '';
+        for (let [event_name, event_actions] of Object.entries(all_listeners)) {
+            listening_events += `${event_name},`;
+            for (let event_action of event_actions)
+                this.#client.on(event_name, event_action)
+        }
+
+
+
+        console.log(`Listening to  ${Object.keys(all_listeners).length - 1} events: `)
+
+        this.#listeners = all_listeners;
     }
 
     _on_connected() {
