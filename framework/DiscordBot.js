@@ -24,9 +24,9 @@ class DiscordBot {
         this.#voice = startup_settings.voice;
         this.#debug = process.env.DEBUG;
         this.#webserver = process.env.WEBSERVER;
+        this.#client = new discord.Client();
         this._generate_commands();
         this._generate_listeners();
-        this.#client = new discord.Client();
         if (this.#debug) {
             this._on_connected();
         }
