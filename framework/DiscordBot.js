@@ -116,10 +116,16 @@ class DiscordBot {
                 }
             }
             if (found_command === null) return false;
+            if (found_command.hasOwnProperty('allowed_permissions')) {
+                if (!message.member.permissions.has(found_command.allowed_permissions))
+                    return message.channel.send(`For the ${command} command you need to have: ${found_command.allowed_permissions} permissions`);
+            }
             console.log(`Received command ${command} with params: ${JSON.stringify(args)}`);
-            if (found_command.allowed_channels.length !== 0 && !found_command.allowed_channels.includes(message.channel.id)) {
-                console.log(`Command ${command} not allowed in channel ${message.channel.name}`);
-                return;
+            if (found_command.hasOwnProperty('allowed_channels')) {
+                if (found_command.allowed_channels.length !== 0 && !found_command.allowed_channels.includes(message.channel.id)) {
+                    console.log(`Command ${command} not allowed in channel ${message.channel.name}`);
+                    return;
+                }
             }
             await found_command.execute(message, message.author, ...args);
         });
