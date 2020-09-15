@@ -12,8 +12,7 @@
     "express": "*",
     "fs": "*",
     "glob": "^7.1.4",
-    "node-opus": "*",
-    "shlex": "*"
+    "node-opus": "*"
   },
   "engines": {
     "node": "12.x"
