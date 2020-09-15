@@ -13,7 +13,7 @@ class Listener {
     }
 
     get_channel_from_id(channel_id) {
-        return this._client.channels.get(channel_id);
+        return this._client.channels.cache.get(channel_id);
     }
 
     execute(...params) {
