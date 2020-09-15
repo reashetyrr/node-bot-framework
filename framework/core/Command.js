@@ -7,6 +7,15 @@ class Command {
     get is_debug() {
         return process.env.DEBUG;
     }
+
+    get client() {
+        return this._client;
+    }
+
+    set client(c) {
+        this._client = c;
+    }
+
     execute(...params) {
         throw new DOMException('THE EXECUTE COMMAND SHOULD BE OVERRULED!!!');
     }
