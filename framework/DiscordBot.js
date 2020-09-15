@@ -1,7 +1,7 @@
 const discord = require("discord.js");
 const glob = require("glob");
 const path = require("path");
-const shlex = require('shlex');
+const shlex = require('./custom_edits/shlex');
 const Command = require('./core/Command');
 const Listener = require('./core/Listener');
 
@@ -12,7 +12,6 @@ class DiscordBot {
     #listeners = {};
     #voice=null;
     #webserver=null;
-    #cache = {};
     #token=null;
     #prefix=null;
     constructor(prefix, token) {
@@ -35,18 +34,27 @@ class DiscordBot {
         } catch (e) {
             console.error(e.message);
         }
-        this._generate_commands();
-        this._generate_listeners();
+        this.#client.on('custom.reload', () => {
+            this._generate_commands();
+            this._generate_listeners();
+        });
+
+        this.#client.emit('custom.reload');
     }
 
     _generate_commands() {
-        const commands = glob.sync('./commands/*.js').map(file => require( path.resolve( file )));
+        const commands = glob.sync('./commands/*.js').map(file => {
+            const resolved_path = path.resolve(file);
+            delete require.cache[resolved_path];
+            return require(resolved_path)
+        });
         let all_commands = {all: commands.map(c => {
                 try {
                     const t =  new c();
                     if (!(t instanceof Command)) {
                         return false;
                     }
+                    t.client = this.#client;
                     return t;
                 } catch (e) {
                     return false;
@@ -60,7 +68,11 @@ class DiscordBot {
     }
 
     _generate_listeners() {
-        const listeners = glob.sync('./listeners/*.js').map(listener => require( path.resolve( listener )));
+        const listeners = glob.sync('./listeners/*.js').map(listener => {
+            const resolved_path = path.resolve(listener);
+            delete require.cache[resolved_path];
+            return require(resolved_path)
+        });
         let all_listeners = {all: listeners.map(c => {
                 try {
                     const t =  new c();
