@@ -16,7 +16,7 @@ class Command {
         this._client = c;
     }
 
-    execute(...params) {
+    execute(message, author, ...params) {
         throw new DOMException('THE EXECUTE COMMAND SHOULD BE OVERRULED!!!');
     }
 }
