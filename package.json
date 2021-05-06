@@ -11,8 +11,7 @@
     "dotenv": "^8.1.0",
     "express": "*",
     "fs": "*",
-    "glob": "^7.1.4",
-    "node-opus": "*"
+    "glob": "^7.1.4"
   },
   "engines": {
     "node": "12.x"
