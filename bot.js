@@ -5,6 +5,18 @@ global.shlex = require('./framework/custom_edits/shlex');
 global.Command = require('./framework/core/Command');
 global.Listener = require('./framework/core/Listener');
 
+
+const base_classes = glob.sync('./base_classes/**/*.js').map(file => {
+    const resolved_path = path.resolve(file);
+    delete require.cache[resolved_path];
+    return require(resolved_path)
+});
+
+for (const c of base_classes) {
+    global[c.name] = c;
+}
+
+
 const DiscordBot = require("./framework/DiscordBot");
 // if using glitch comment out the line below
 require('dotenv').config();
