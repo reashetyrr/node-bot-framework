@@ -1,3 +1,10 @@
+global.discord = require("discord.js");
+global.glob = require("glob");
+global.path = require("path");
+global.shlex = require('./framework/custom_edits/shlex');
+global.Command = require('./framework/core/Command');
+global.Listener = require('./framework/core/Listener');
+
 const DiscordBot = require("./framework/DiscordBot");
 // if using glitch comment out the line below
 require('dotenv').config();

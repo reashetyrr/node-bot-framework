@@ -1,5 +1,3 @@
-const Command = require("../framework/core/Command.js");
-
 class Refresh extends Command {
     constructor() {
         super();

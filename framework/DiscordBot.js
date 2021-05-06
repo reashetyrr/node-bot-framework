@@ -1,10 +1,3 @@
-const discord = require("discord.js");
-const glob = require("glob");
-const path = require("path");
-const shlex = require('./custom_edits/shlex');
-const Command = require('./core/Command');
-const Listener = require('./core/Listener');
-
 class DiscordBot {
     #client=null;
     #debug=null;

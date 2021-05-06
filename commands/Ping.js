@@ -1,5 +1,3 @@
-const Command = require("../framework/core/Command.js");
-
 class Ping extends Command {
     constructor() {
         super();

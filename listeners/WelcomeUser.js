@@ -1,5 +1,3 @@
-const Listener = require('../framework/core/Listener');
-
 class WelcomeUser extends Listener {
     constructor() {
         super();
