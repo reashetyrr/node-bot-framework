@@ -29,4 +29,4 @@ if (!process.env.DISCORD_PREFIX) {
     process.env.DISCORD_PREFIX = '/';
 }
 
-const bot = new DiscordBot(process.env.DISCORD_PREFIX, process.env.DISCORD_TOKEN).run();
+new DiscordBot(process.env.DISCORD_PREFIX, process.env.DISCORD_TOKEN).run();
