@@ -3,6 +3,7 @@ class Command {
         this.allowed_channels = [];
         this.allowed_roles = [];
         this.aliases = [];
+        this.parameters = [];
     }
     get is_debug() {
         return process.env.DEBUG;
