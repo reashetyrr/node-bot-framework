@@ -1,8 +1,8 @@
 class DiscordBot {
     #client=null;
     #debug=null;
-    #commands = {};
-    #listeners = {};
+    #commands = new Map();
+    #listeners = new Map();
     #voice=null;
     #webserver=null;
     #token=null;
@@ -41,22 +41,23 @@ class DiscordBot {
             delete require.cache[resolved_path];
             return require(resolved_path)
         });
-        let all_commands = {all: commands.map(c => {
-                try {
-                    const t =  new c();
-                    if (!(t instanceof Command)) {
-                        return false;
-                    }
-                    t.client = this.#client;
-                    return t;
-                } catch (e) {
+        const all_commands = new Map();
+        const _commands = commands.map(c => {
+            try {
+                const t = new c();
+                if (!(t instanceof Command))
                     return false;
-                }
-            })};
+                t.client = this.#client;
+                return t;
+            }  catch (e) {
+                return false;
+            }
+        });
 
-        for (let command of all_commands.all){
-            all_commands[command.name] = command;
+        for (let command of _commands){
+            all_commands.set(command.name, command);
         }
+        all_commands.set('all', _commands);
         this.#commands = all_commands;
     }
 
@@ -66,27 +67,32 @@ class DiscordBot {
             delete require.cache[resolved_path];
             return require(resolved_path)
         });
-        let all_listeners = {all: listeners.map(c => {
-                try {
-                    const t =  new c();
-                    if (!(t instanceof Listener)) {
-                        return false;
-                    }
-                    t.client = this.#client;
-                    return t;
-                } catch (e) {
+        const _listeners = listeners.map(c => {
+            try {
+                const t =  new c();
+                if (!(t instanceof Listener)) {
                     return false;
                 }
-            })};
+                t.client = this.#client;
+                return t;
+            } catch (e) {
+                return false;
+            }
+        });
+        const all_listeners = new Map();
 
-        for (let listener of all_listeners.all){
-            if (!all_listeners[listener.event_name])
-                all_listeners[listener.event_name] = [];
-            all_listeners[listener.event_name].push(listener)
+        for (let listener of _listeners){
+            if (!all_listeners.has(listener.event_name))
+                all_listeners.set(listener.event_name, []);
+            const _tl = all_listeners.get(listener.event_name);
+            _tl.push(listener);
+            all_listeners.set(listener.event_name, _tl);
         }
 
+        all_listeners.set('all', _listeners);
+
         let listening_events = '';
-        for (let [event_name, listeners] of Object.entries(all_listeners)) {
+        for (let [event_name, listeners] of all_listeners) {
             if (event_name === 'all') continue;
             listening_events += `${event_name}(${listeners.length} registered actions),`;
             listeners.forEach(listener => {
@@ -113,7 +119,7 @@ class DiscordBot {
             const args = shlex.split(message.content.slice(this.#prefix.length).trim());
             const command = args.shift().toLowerCase();
             let found_command = null;
-            for (let [name, c] of Object.entries(this.#commands)) {
+            for (let [name, c] of this.#commands) {
                 if (name === 'all') continue;
                 if (c.name === command || (c.aliases !== undefined && c.aliases.includes(command))) {
                     found_command = c;
