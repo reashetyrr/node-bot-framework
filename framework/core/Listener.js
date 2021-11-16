@@ -1,6 +1,6 @@
 class Listener {
     constructor(...params) {
-        this.send_to_channels = [];
+        // this.send_to_channels = [];
         this.event_name = '';
         this._client = null;
     }

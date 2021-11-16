@@ -1,9 +1,13 @@
+const { SlashCommandBuilder } = require('@discordjs/builders');
+
 class Command {
     constructor(...params) {
         this.allowed_channels = [];
-        this.allowed_roles = [];
+        // this.allowed_roles = [];
+        this.name = '';
         this.aliases = [];
         this.parameters = [];
+        this.description = '';
     }
     get is_debug() {
         return process.env.DEBUG;
@@ -17,8 +21,14 @@ class Command {
         this._client = c;
     }
 
-    execute(message, author, ...params) {
+    execute(interaction) {
         throw new DOMException('THE EXECUTE COMMAND SHOULD BE OVERRULED!!!');
+    }
+
+    register() {
+        return new SlashCommandBuilder()
+            .setName(this.name)
+            .setDescription(this.description);
     }
 }
 

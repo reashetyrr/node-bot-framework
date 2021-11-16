@@ -71,7 +71,8 @@ class DiscordBot {
         });
 
         for (let command of _commands){
-            this.#client.commands.set(command.name, command);
+            const cbuilder = command.register();
+            this.#client.commands.set(cbuilder.name, command);
         }
     }
 
@@ -137,11 +138,16 @@ class DiscordBot {
             const command = this.#client.commands.get(interaction.commandName);
             if (!command) return;
 
+            if (!command.allowed_channels.includes(interaction.channel.id)) {
+                await interaction.editReply('This command is not allowed in this channel');
+                return;
+            }
+
             try {
                 await command.execute(interaction);
             } catch (error) {
                 logger.error(error);
-                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
+                await interaction.editReply({ content: 'There was an error while executing this command!', ephemeral: true });
             }
         });
     }
