@@ -1,10 +1,7 @@
 class DiscordBot {
     #client=null;
     #debug=null;
-    #commands = new Map();
-    #listeners = new Map();
     #voice=null;
-    #webserver=null;
     #token=null;
 
     constructor(token) {
@@ -29,14 +26,20 @@ class DiscordBot {
 
         this.#client = new discord.Client({intents: intents});
 
+        this.#client.on('ready', () => {
+            logger.log(`Listening to commands`)
+        });
+
         if (this.#debug) {
             this._on_connected();
         }
-        this._on_message();
+
+        this._on_command();
+
         try{
             this.#client.login(this.#token);
         } catch (e) {
-            console.error(e.message);
+            logger.error(e.message);
         }
         this.#client.on('custom.reload', () => {
             this._generate_commands();
@@ -47,12 +50,14 @@ class DiscordBot {
     }
 
     _generate_commands() {
+        this.#client.commands = new discord.Collection();
+
         const commands = glob.sync('./commands/*.js').map(file => {
             const resolved_path = path.resolve(file);
             delete require.cache[resolved_path];
             return require(resolved_path)
         });
-        const all_commands = new Map();
+
         const _commands = commands.map(c => {
             try {
                 const t = new c();
@@ -66,10 +71,8 @@ class DiscordBot {
         });
 
         for (let command of _commands){
-            all_commands.set(command.name, command);
+            this.#client.commands.set(command.name, command);
         }
-        all_commands.set('all', _commands);
-        this.#commands = all_commands;
     }
 
     _generate_listeners() {
@@ -78,6 +81,7 @@ class DiscordBot {
             delete require.cache[resolved_path];
             return require(resolved_path)
         });
+
         const _listeners = listeners.map(c => {
             try {
                 const t =  new c();
@@ -113,43 +117,32 @@ class DiscordBot {
             });
         }
 
-        console.log(`Listening to  ${Object.keys(all_listeners).length - 1} events: ${listening_events.slice(0, -1)}`)
-
-        this.#listeners = all_listeners;
+        console.log(`Listening to  ${Object.keys(all_listeners).length} events: ${listening_events}`)
     }
 
     _on_connected() {
         this.#client.on('ready', () => {
-            console.log(`Succesfully logged in as ${this.#client.user.tag}`)
+            logger.log(`Succesfully logged in as ${this.#client.user.tag}`)
         });
     }
 
-    _on_message() {
-        this.#client.on('message', async (message) => {
-            if (message.author.bot || !message.content.startsWith(this.#prefix)) return;
-            const args = shlex.split(message.content.slice(this.#prefix.length).trim());
-            const command = args.shift().toLowerCase();
-            let found_command = null;
-            for (let [name, c] of this.#commands) {
-                if (name === 'all') continue;
-                if (c.name === command || (c.aliases !== undefined && c.aliases.includes(command))) {
-                    found_command = c;
-                    break;
-                }
+    _on_command() {
+        this.#client.on('interactionCreate', async interaction => {
+            if (!interaction.isCommand()) return;
+
+            if (interaction.user.bot) return;
+
+            await interaction.deferReply(); // give us more than 3s
+
+            const command = this.#client.commands.get(interaction.commandName);
+            if (!command) return;
+
+            try {
+                await command.execute(interaction);
+            } catch (error) {
+                logger.error(error);
+                await interaction.reply({ content: 'There was an error while executing this command!', ephemeral: true });
             }
-            if (found_command === null) return false;
-            if (found_command.hasOwnProperty('allowed_permissions')) {
-                if (!message.member.permissions.has(found_command.allowed_permissions))
-                    return message.channel.send(`For the ${command} command you need to have: ${found_command.allowed_permissions} permissions`);
-            }
-            console.log(`Received command ${command} with params: ${JSON.stringify(args)}`);
-            if (found_command.hasOwnProperty('allowed_channels')) {
-                if (found_command.allowed_channels.length !== 0 && !found_command.allowed_channels.includes(message.channel.id)) {
-                    console.log(`Command ${command} not allowed in channel ${message.channel.name}`);
-                    return;
-                }
-            }
-            await found_command.execute(message, message.author, ...args);
         });
     }
 }
