@@ -4,10 +4,10 @@ class Command {
     constructor(...params) {
         this.allowed_channels = [];
         // this.allowed_roles = [];
-        this.name = '';
+        this.name = 'No name set';
         this.aliases = [];
         this.parameters = [];
-        this.description = '';
+        this.description = 'No description set';
     }
     get is_debug() {
         return process.env.DEBUG;

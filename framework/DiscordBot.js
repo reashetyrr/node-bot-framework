@@ -14,7 +14,7 @@ class DiscordBot {
 
         const intents = new discord.Intents();
 
-        const env_intents = json.parse(process.env.DISCORD_INTENTS);
+        const env_intents = JSON.parse(process.env.DISCORD_INTENTS);
 
         for (const intent of env_intents) {
             if (!discord.Intents.FLAGS.hasOwnProperty(intent)) {
