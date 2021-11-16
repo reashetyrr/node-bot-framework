@@ -138,7 +138,7 @@ class DiscordBot {
             const command = this.#client.commands.get(interaction.commandName);
             if (!command) return;
 
-            if (!command.allowed_channels.includes(interaction.channel.id)) {
+            if (command.allowed_channels && command.allowed_channels.length > 0 && !command.allowed_channels.includes(interaction.channel.id)) {
                 await interaction.editReply('This command is not allowed in this channel');
                 return;
             }

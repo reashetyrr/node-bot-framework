@@ -8,7 +8,7 @@ class Ping extends Command {
 
     async execute(interaction) {
         const m = await interaction.editReply('Ping?');
-        return m.editReply(`Pong! Latency is ${m.createdTimestamp - interaction.createdTimestamp}ms.`);
+        return interaction.editReply(`Pong! Latency is ${m.createdTimestamp - interaction.createdTimestamp}ms.`);
     }
 }
 
