@@ -5,6 +5,25 @@ global.shlex = require('./framework/custom_edits/shlex');
 global.Command = require('./framework/core/Command');
 global.Listener = require('./framework/core/Listener');
 
+require('dotenv').config();
+
+const is_dev = process.env.hasOwnProperty('mode') && process.env.mode === 'dev'
+const winston = require('winston');
+
+global.logger = winston.createLogger({
+    level: 'info',
+    format: winston.format.simple(),
+    defaultMeta: { service: 'discord-bot-framework' },
+    transports: [
+        //
+        // - Write all logs with level `error` and below to `error.log`
+        // - Write all logs with level `info` and below to `combined.log`
+        //
+        new winston.transports.File({ filename: 'error.log', level: 'error' }),
+        new winston.transports.File({ filename: 'combined.log' }),
+    ],
+});
+
 
 const base_classes = glob.sync('./base_classes/**/*.js').map(file => {
     const resolved_path = path.resolve(file);
@@ -18,15 +37,12 @@ for (const c of base_classes) {
 
 
 const DiscordBot = require("./framework/DiscordBot");
-// if using glitch comment out the line below
-require('dotenv').config();
+const token = is_dev? process.env.DISCORD_TOKEN_DEV : process.env.DISCORD_TOKEN_PROD;
 
-if (!process.env.DISCORD_TOKEN)
-    return console.error('Missing bot token in .env');
+if (!token && is_dev)
+    return console.error('Missing bot dev token in .env');
 
-if (!process.env.DISCORD_PREFIX) {
-    console.error('Missing bot prefix, using / as default')
-    process.env.DISCORD_PREFIX = '/';
-}
+if (!token && !is_dev)
+    return console.error('Missing bot prod token in .env');
 
-new DiscordBot(process.env.DISCORD_PREFIX, process.env.DISCORD_TOKEN).run();
+new DiscordBot(token).run();
