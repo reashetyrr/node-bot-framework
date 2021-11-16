@@ -6,17 +6,28 @@ class DiscordBot {
     #voice=null;
     #webserver=null;
     #token=null;
-    #prefix=null;
-    constructor(prefix, token) {
+
+    constructor(token) {
         this.#token = token;
-        this.#prefix = prefix;
     }
 
     run(startup_settings = {commands: true, listeners: true, voice: true}) {
         this.#voice = startup_settings.voice;
         this.#debug = process.env.DEBUG;
-        this.#webserver = process.env.WEBSERVER;
-        this.#client = new discord.Client();
+
+        const intents = new discord.Intents();
+
+        const env_intents = json.parse(process.env.DISCORD_INTENTS);
+
+        for (const intent of env_intents) {
+            if (!discord.Intents.FLAGS.hasOwnProperty(intent)) {
+                logger.error(`Invalid intent passed (${intent}`);
+                continue;
+            }
+            intents.add(discord.Intents.FLAGS[intent]);
+        }
+
+        this.#client = new discord.Client({intents: intents});
 
         if (this.#debug) {
             this._on_connected();
