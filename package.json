@@ -11,10 +11,11 @@
     "dotenv": "^8.1.0",
     "express": "*",
     "fs": "*",
-    "glob": "^7.1.4"
+    "glob": "^7.1.4",
+    "winston": "^3.3.3"
   },
   "engines": {
-    "node": "12.x"
+    "node": "16.x"
   },
   "license": "MIT"
 }
