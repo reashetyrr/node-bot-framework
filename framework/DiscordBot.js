@@ -27,7 +27,7 @@ class DiscordBot {
         this.#client = new discord.Client({intents: intents});
 
         this.#client.on('ready', () => {
-            logger.log(`Listening to commands`)
+            logger.info(`Listening to commands`)
         });
 
         if (this.#debug) {
@@ -123,7 +123,7 @@ class DiscordBot {
 
     _on_connected() {
         this.#client.on('ready', () => {
-            logger.log(`Succesfully logged in as ${this.#client.user.tag}`)
+            logger.info(`Succesfully logged in as ${this.#client.user.tag}`)
         });
     }
 
