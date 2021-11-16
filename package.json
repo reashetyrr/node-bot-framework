@@ -7,11 +7,13 @@
     "start": "node bot.js"
   },
   "dependencies": {
-    "discord.js": "*",
+    "@discordjs/builders": "^0.8.2",
+    "discord.js": "^13.3.1",
     "dotenv": "^8.1.0",
     "express": "*",
-    "fs": "*",
+    "fs": "^0.0.1-security",
     "glob": "^7.1.4",
+    "mysql": "^2.18.1",
     "winston": "^3.3.3"
   },
   "engines": {
