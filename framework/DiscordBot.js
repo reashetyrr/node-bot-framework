@@ -58,7 +58,7 @@ class DiscordBot {
             return require(resolved_path)
         });
 
-        const _commands = commands.map(c => {
+        let _commands = commands.map(c => {
             try {
                 const t = new c();
                 if (!(t instanceof Command))
@@ -69,6 +69,8 @@ class DiscordBot {
                 return false;
             }
         });
+
+        _commands = _commands.filter(c => c);
 
         for (let command of _commands){
             const cbuilder = command.register();
